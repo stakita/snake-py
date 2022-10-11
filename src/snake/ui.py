@@ -1,3 +1,4 @@
+import sys
 import curses
 
 
@@ -7,16 +8,35 @@ def init(state):
     curses.cbreak()
     curses.noecho()
     state.game_win.keypad(True)
-    # curses.curs_set(0)
+    hide_cursor()
 
     return state
 
 
 def finish(state):
+    show_cursor()
     curses.nocbreak()
     state.game_win.keypad(False)
     curses.echo()
     curses.endwin()
+
+
+# Refs:
+#   - https://en.wikipedia.org/wiki/ANSI_escape_code
+#   - https://realpython.com/lessons/ansi-escape-sequences/
+
+hide_cursor_sequence = '\x1b[?25l'
+show_cursor_sequence = '\x1b[?25l'
+
+
+def hide_cursor():
+    sys.stdout.write(hide_cursor_sequence)
+    sys.stdout.flush()
+
+
+def show_cursor():
+    sys.stdout.write(show_cursor_sequence)
+    sys.stdout.flush()
 
 
 def draw_screen(state):
