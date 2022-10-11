@@ -26,7 +26,7 @@ def finish(state):
 #   - https://realpython.com/lessons/ansi-escape-sequences/
 
 hide_cursor_sequence = '\x1b[?25l'
-show_cursor_sequence = '\x1b[?25l'
+show_cursor_sequence = '\x1b[?25h'
 
 
 def hide_cursor():
@@ -51,6 +51,8 @@ def draw_screen(state):
 
     state.frame_win.refresh()
     state.game_win.refresh()
+
+    return state
 
 
 def draw_snake(state):
