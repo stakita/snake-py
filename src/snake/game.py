@@ -1,19 +1,30 @@
-import snake.state as state_mod
-import snake.ui as ui
+from concurrent.futures import thread
 import curses
-
 import time
 
-def init(state):
-    state = ui.init(state)
-    return state
+import snake.state as state_mod
+import snake.ui as ui
+import snake.thread_input as thread_input
 
-def finish(state):
-    ui.finish(state)
+from snake.ui import UiThread
+import snake.event as event
 
+import queue
+
+# TODO: add import checks
+from timeloop import Timeloop
+from datetime import timedelta
 
 def run():
     curses.wrapper(run_wrapped)
+
+tl = Timeloop()
+event_queue = queue.Queue()
+
+@tl.job(interval=timedelta(seconds=0.2))
+def tick():
+    global event_queue
+    event_queue.put(event.Event(event.EVENT_TICK, None))
 
 
 def run_wrapped(stdscr):
@@ -21,19 +32,37 @@ def run_wrapped(stdscr):
 
     # Init game state and variables
     state = state_mod.State()
-    state = init(state)
     state.frame_win = stdscr
-    interval = None
-    reader = None
+
+    ui_thread = UiThread(event_queue, state)
+    ui_thread.start()
+    ui_thread.draw_screen()
+
+    tl.start()
+
+    max_ticks = 100
 
     try:
-        # Draw screen
-        state = ui.draw_screen(state)
+        while max_ticks > 0:
+            max_ticks -= 1
+            # Draw screen
+            ui_thread.draw_screen()
 
-        # Game loop until done
+            # Game loop until done
+            # time.sleep(2)
 
-        time.sleep(2)
+            res = event_queue.get()
+            if res.type() == event.EVENT_INPUT:
+                ch = chr(res.data())
+                print('got: {}'.format(ch))
+
+            elif res.type() == event.EVENT_TICK:
+                print('tick')
+                state.score += 1
+
+
 
     finally:
         # Clean up
-        finish(state)
+        ui_thread.stop()
+        tl.stop()
