@@ -1,10 +1,7 @@
-from concurrent.futures import thread
 import curses
 import time
 
 import snake.state as state_mod
-import snake.ui as ui
-import snake.thread_input as thread_input
 
 from snake.ui import UiThread
 import snake.event as event
@@ -55,6 +52,8 @@ def run_wrapped(stdscr):
             if res.type() == event.EVENT_INPUT:
                 ch = chr(res.data())
                 print('got: {}'.format(ch))
+                if ch == 'q':
+                    break
 
             elif res.type() == event.EVENT_TICK:
                 print('tick')
