@@ -77,10 +77,43 @@ def run_wrapped(stdscr):
 
 
 def run_turn(state):
-    state.score += 1
+    next_head = next_snake_head(state.snake[0], state.direction)
+    state.previous = state.direction
+
+    state = move_snake(state, next_head)
+
     return state
 
 
 def place_snake(state):
     state.snake.append((state.width // 2, state.height // 2))
     return state
+
+
+def grow_snake(state, next_head):
+    # state.snake.insert(0, next_head)
+    return state
+
+
+def move_snake(state, next_head):
+    state.snake.pop()
+    state.snake.insert(0, next_head)
+    return state
+
+
+def next_snake_head(current_head, direction):
+    x_curr, y_curr = current_head
+    x_delta = 0
+    y_delta = 0
+    match direction:
+        case state_mod.DIRECTION_UP:
+            y_delta -= 1
+        case state_mod.DIRECTION_DOWN:
+            y_delta += 1
+        case state_mod.DIRECTION_LEFT:
+            x_delta -= 1
+        case state_mod.DIRECTION_RIGHT:
+            x_delta += 1
+        case _:
+            raise Exception('Unexpected direction')
+    return (x_curr + x_delta, y_curr + y_delta)

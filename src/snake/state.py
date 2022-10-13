@@ -1,6 +1,10 @@
 
 from re import S
 
+DIRECTION_UP = 'direction_up'
+DIRECTION_DOWN = 'direction_down'
+DIRECTION_LEFT = 'direction_left'
+DIRECTION_RIGHT = 'direction_right'
 
 class State:
 
@@ -9,8 +13,10 @@ class State:
         self.height = height
         self.frame_win = None
         self.game_win = None
+        self.snake = []
+        self.direction = DIRECTION_DOWN
+        self.previous = DIRECTION_DOWN
         self.score = 0
 
         # TODO: remove
-        self.snake = []
         self.food = (16, 16)
