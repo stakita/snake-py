@@ -47,17 +47,10 @@ def run_wrapped(stdscr):
 
     tl.start()
 
-    max_ticks = 100
     stop = False
 
     try:
-        while max_ticks > 0 and stop == False:
-            max_ticks -= 1
-            # Draw screen
-
-            # Game loop until done
-            # time.sleep(2)
-
+        while stop == False:
             res = event_queue.get()
 
             if res.type() == event.EVENT_TICK:
@@ -68,8 +61,9 @@ def run_wrapped(stdscr):
                     ui_thread.game_over()
 
             elif res.type() == event.EVENT_INPUT:
-                ch = chr(res.data())
-                if ch == 'q':
+                key = res.data()
+                handle_key(state, key)
+                if chr(key) == 'q':
                     stop = True
 
     except KeyboardInterrupt:
@@ -79,6 +73,23 @@ def run_wrapped(stdscr):
         # Clean up
         ui_thread.stop()
         tl.stop()
+
+
+def handle_key(state, key):
+    log.debug('handle_key: {}'.format(key))
+    if key == curses.KEY_UP and not state.previous in (state_mod.DIRECTION_DOWN, state_mod.DIRECTION_UP):
+        log.debug('go up')
+        state.direction = state_mod.DIRECTION_UP
+    elif key == curses.KEY_DOWN and not state.previous in (state_mod.DIRECTION_DOWN, state_mod.DIRECTION_UP):
+        log.debug('go down')
+        state.direction = state_mod.DIRECTION_DOWN
+    elif key == curses.KEY_LEFT and not state.previous in (state_mod.DIRECTION_LEFT, state_mod.DIRECTION_RIGHT):
+        log.debug('go left')
+        state.direction = state_mod.DIRECTION_LEFT
+    elif key == curses.KEY_RIGHT and not state.previous in (state_mod.DIRECTION_LEFT, state_mod.DIRECTION_RIGHT):
+        log.debug('go right')
+        state.direction = state_mod.DIRECTION_RIGHT
+    return state
 
 
 def run_turn(state):
