@@ -156,6 +156,7 @@ class UiThread(Thread):
 
     def draw_food(self, state):
         if state.food:
+            log.debug('state.food: {}'.format(state.food))
             x, y = state.food
             state.game_win.move(y, x)
             state.game_win.addstr('*')

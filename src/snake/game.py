@@ -1,5 +1,7 @@
 import curses
+from random import randint
 import time
+import logging as log
 
 import snake.state as state_mod
 
@@ -112,9 +114,17 @@ def move_snake(state, next_head):
 
 
 def place_food(state):
+    done = False
+    while not done:
+        location = (
+            randint(1, state.width - 2),
+            randint(1, state.height - 3)
+        )
 
-    x_head, y_head = state.snake[0]
-    state.food = (x_head, y_head + 2)
+        if not hits_food(state, location):
+            log.debug('setting food to: {}'.format(location))
+            state.food = location
+            done = True
 
     return state
 
@@ -141,7 +151,9 @@ def hits_snake(state, next_head):
 
 
 def hits_food(state, next_head):
-    return state.food == next_head
+    if state.food:
+        return state.food == next_head
+    return False
 
 
 def next_snake_head(current_head, direction):
