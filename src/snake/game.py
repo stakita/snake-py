@@ -57,7 +57,7 @@ def run_wrapped(stdscr):
                 if not state.game_over:
                     state = run_turn(state)
                     ui_thread.draw_screen()
-                else:
+                if state.game_over:
                     ui_thread.game_over()
 
             elif res.type() == event.EVENT_INPUT:
@@ -109,7 +109,8 @@ def run_turn(state):
 
 
 def place_snake(state):
-    state.snake.append((state.width // 2, state.height // 2))
+    # state.snake.append((state.width // 2, state.height // 2))
+    state.snake = [(state.width // 2, state.height // 2)] * 10
     return state
 
 
@@ -158,7 +159,7 @@ def hits_wall(state, next_head):
 
 
 def hits_snake(state, next_head):
-    return False
+    return next_head in state.snake
 
 
 def hits_food(state, next_head):
