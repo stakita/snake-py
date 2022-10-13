@@ -12,5 +12,5 @@ class State:
         self.score = 0
 
         # TODO: remove
-        self.snake = [(20, 20), (20, 21), (19, 21)]
+        self.snake = []
         self.food = (16, 16)

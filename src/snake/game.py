@@ -24,12 +24,19 @@ def tick():
     event_queue.put(event.Event(event.EVENT_TICK, None))
 
 
+def init(state, main_screen):
+    state = place_snake(state)
+    state.frame_win = main_screen
+    return state
+
+
 def run_wrapped(stdscr):
     '''Entry point and main loop of the game'''
 
     # Init game state and variables
     state = state_mod.State()
-    state.frame_win = stdscr
+    state = init(state, stdscr)
+
 
     ui_thread = UiThread(event_queue, state)
     ui_thread.start()
@@ -49,19 +56,28 @@ def run_wrapped(stdscr):
             # time.sleep(2)
 
             res = event_queue.get()
-            if res.type() == event.EVENT_INPUT:
+
+            if res.type() == event.EVENT_TICK:
+                state = run_turn(state)
+
+            elif res.type() == event.EVENT_INPUT:
                 ch = chr(res.data())
                 print('got: {}'.format(ch))
                 if ch == 'q':
                     break
-
-            elif res.type() == event.EVENT_TICK:
-                print('tick')
-                state.score += 1
-
 
 
     finally:
         # Clean up
         ui_thread.stop()
         tl.stop()
+
+
+def run_turn(state):
+    state.score += 1
+    return state
+
+
+def place_snake(state):
+    state.snake.append((state.width // 2, state.height // 2))
+    return state
