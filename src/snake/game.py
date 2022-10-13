@@ -109,8 +109,7 @@ def run_turn(state):
 
 
 def place_snake(state):
-    # state.snake.append((state.width // 2, state.height // 2))
-    state.snake = [(state.width // 2, state.height // 2)] * 10
+    state.snake.append((state.width // 2, state.height // 2))
     return state
 
 
