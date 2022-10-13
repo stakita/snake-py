@@ -51,7 +51,6 @@ def run_wrapped(stdscr):
         while max_ticks > 0 and stop == False:
             max_ticks -= 1
             # Draw screen
-            ui_thread.draw_screen()
 
             # Game loop until done
             # time.sleep(2)
@@ -59,11 +58,14 @@ def run_wrapped(stdscr):
             res = event_queue.get()
 
             if res.type() == event.EVENT_TICK:
-                state = run_turn(state)
+                if not state.game_over:
+                    state = run_turn(state)
+                    ui_thread.draw_screen()
+                else:
+                    ui_thread.game_over()
 
             elif res.type() == event.EVENT_INPUT:
                 ch = chr(res.data())
-                print('got: {}'.format(ch))
                 if ch == 'q':
                     stop = True
 
@@ -80,7 +82,10 @@ def run_turn(state):
     next_head = next_snake_head(state.snake[0], state.direction)
     state.previous = state.direction
 
-    state = move_snake(state, next_head)
+    if loses(state, next_head):
+        state.game_over = True
+    else:
+        state = move_snake(state, next_head)
 
     return state
 
@@ -99,6 +104,22 @@ def move_snake(state, next_head):
     state.snake.pop()
     state.snake.insert(0, next_head)
     return state
+
+
+def loses(state, next_head):
+    return hits_wall(state, next_head) or hits_snake(state, next_head)
+
+
+def hits_wall(state, next_head):
+    x_next, y_next = next_head
+    return (x_next == 0
+            or y_next == 0
+            or x_next == state.width - 1
+            or y_next == state.height - 2)
+
+
+def hits_snake(state, next_head):
+    return False
 
 
 def next_snake_head(current_head, direction):

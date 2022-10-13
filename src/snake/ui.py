@@ -32,9 +32,14 @@ class UiThread(Thread):
         # self.stop_flag = True
         self.control_queue.put('STOP')
 
+
     def draw_screen(self):
         log.debug('draw_screen')
         self.control_queue.put('DRAW_SCREEN')
+
+
+    def game_over(self):
+        self.control_queue.put('GAME_OVER')
 
 
     def run(self):
@@ -54,6 +59,9 @@ class UiThread(Thread):
 
                 elif command == 'DRAW_SCREEN':
                     self._draw_screen(self.state)
+
+                elif command == 'GAME_OVER':
+                    self._game_over(self.state)
 
                 else:
                     raise Exception('Unexpected command: {}'.format(command))
@@ -134,6 +142,12 @@ class UiThread(Thread):
         return state
 
 
+    def _game_over(self, state):
+        self.center_text(state, ' GAME OVER ')
+        state.frame_win.refresh()
+        state.game_win.refresh()
+
+
     def draw_snake(self, state):
         for x, y in state.snake:
             state.game_win.move(y, x)
@@ -144,6 +158,13 @@ class UiThread(Thread):
         x, y = state.food
         state.game_win.move(y, x)
         state.game_win.addstr('*')
+
+
+    def center_text(self, state, text):
+        y = state.height // 2
+        x = (state.width - len(text)) // 2
+        state.game_win.move(y, x)
+        state.game_win.addstr(text)
 
 
     def update_score(self, state):

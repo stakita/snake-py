@@ -16,6 +16,7 @@ class State:
         self.snake = []
         self.direction = DIRECTION_DOWN
         self.previous = DIRECTION_DOWN
+        self.game_over = False
         self.score = 0
 
         # TODO: remove
