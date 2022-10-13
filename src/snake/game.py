@@ -25,8 +25,9 @@ def tick():
 
 
 def init(state, main_screen):
-    state = place_snake(state)
     state.frame_win = main_screen
+    state = place_snake(state)
+    state = place_food(state)
     return state
 
 
@@ -84,6 +85,10 @@ def run_turn(state):
 
     if loses(state, next_head):
         state.game_over = True
+    elif hits_food(state, next_head):
+        state = grow_snake(state, next_head)
+        state = place_food(state)
+        state = incr_score(state)
     else:
         state = move_snake(state, next_head)
 
@@ -96,13 +101,26 @@ def place_snake(state):
 
 
 def grow_snake(state, next_head):
-    # state.snake.insert(0, next_head)
+    state.snake.insert(0, next_head)
     return state
 
 
 def move_snake(state, next_head):
     state.snake.pop()
     state.snake.insert(0, next_head)
+    return state
+
+
+def place_food(state):
+
+    x_head, y_head = state.snake[0]
+    state.food = (x_head, y_head + 2)
+
+    return state
+
+
+def incr_score(state):
+    state.score += 1
     return state
 
 
@@ -120,6 +138,10 @@ def hits_wall(state, next_head):
 
 def hits_snake(state, next_head):
     return False
+
+
+def hits_food(state, next_head):
+    return state.food == next_head
 
 
 def next_snake_head(current_head, direction):

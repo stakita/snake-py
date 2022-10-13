@@ -155,9 +155,10 @@ class UiThread(Thread):
 
 
     def draw_food(self, state):
-        x, y = state.food
-        state.game_win.move(y, x)
-        state.game_win.addstr('*')
+        if state.food:
+            x, y = state.food
+            state.game_win.move(y, x)
+            state.game_win.addstr('*')
 
 
     def center_text(self, state, text):
