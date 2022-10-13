@@ -45,9 +45,10 @@ def run_wrapped(stdscr):
     tl.start()
 
     max_ticks = 100
+    stop = False
 
     try:
-        while max_ticks > 0:
+        while max_ticks > 0 and stop == False:
             max_ticks -= 1
             # Draw screen
             ui_thread.draw_screen()
@@ -64,8 +65,10 @@ def run_wrapped(stdscr):
                 ch = chr(res.data())
                 print('got: {}'.format(ch))
                 if ch == 'q':
-                    break
+                    stop = True
 
+    except KeyboardInterrupt:
+        stop = True
 
     finally:
         # Clean up
