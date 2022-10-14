@@ -1,7 +1,7 @@
 import curses
 from random import randint
 import time
-import logging as log
+import logging
 
 import snake.state as state_mod
 
@@ -13,6 +13,9 @@ import queue
 # TODO: add import checks
 from timeloop import Timeloop
 from datetime import timedelta
+
+log = logging.getLogger(__name__)
+
 
 def run():
     curses.wrapper(run_wrapped)

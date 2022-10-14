@@ -8,6 +8,7 @@ Usage:
 Options:
     None
 '''
+import logging
 import sys
 
 try:
@@ -20,8 +21,10 @@ except ImportError as e:
 import snake.game
 
 def main():
+    logging.basicConfig(filename='debug.log', level=logging.DEBUG)
     args = docopt(__doc__)
     snake.game.run()
+
 
 if __name__ == '__main__':
     main()

@@ -2,11 +2,11 @@ import sys
 import curses
 from threading import Thread
 import queue
-import logging as log
+import logging
 
 import snake.event as event
 
-log.basicConfig(filename='debug.log', level=log.DEBUG)
+log = logging.getLogger(__name__)
 
 
 commands = {'STOP', 'DRAW_SCREEN', 'GAME_OVER'}
@@ -127,10 +127,10 @@ class UiThread(Thread):
 
 
     def _draw_screen(self, state):
-        state.frame_win.clear()
+        state.frame_win.erase()
         state.frame_win.addstr(0, 2, 'Snake')
         self.update_score(state)
-        state.game_win.clear()
+        state.game_win.erase()
         state.game_win.border('|', '|', '-', '-', '+', '+', '+', '+')
 
         self.draw_snake(state)
