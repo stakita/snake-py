@@ -1,7 +1,9 @@
 import curses
 from random import randint
-import time
 import logging
+import contextlib
+import sys
+import termios
 
 import snake.state as state_mod
 
@@ -17,8 +19,17 @@ from datetime import timedelta
 log = logging.getLogger(__name__)
 
 
-def run():
-    curses.wrapper(run_wrapped)
+@contextlib.contextmanager
+def raw_mode(file):
+    old_attrs = termios.tcgetattr(file.fileno())
+    new_attrs = old_attrs[:]
+    new_attrs[3] = new_attrs[3] & ~(termios.ECHO | termios.ICANON)
+    try:
+        termios.tcsetattr(file.fileno(), termios.TCSADRAIN, new_attrs)
+        yield
+    finally:
+        termios.tcsetattr(file.fileno(), termios.TCSADRAIN, old_attrs)
+
 
 tl = Timeloop()
 event_queue = queue.Queue()
@@ -36,46 +47,51 @@ def init(state, main_screen):
     return state
 
 
-def run_wrapped(stdscr):
+def run():
     '''Entry point and main loop of the game'''
 
-    # Init game state and variables
-    state = state_mod.State()
-    state = init(state, stdscr)
+    stdscr = curses.initscr()
+
+    with raw_mode(sys.stdin):
+
+        # Init game state and variables
+        state = state_mod.State()
+        state = init(state, stdscr)
 
 
-    ui_thread = UiThread(event_queue, state)
-    ui_thread.start()
-    ui_thread.draw_screen()
+        ui_thread = UiThread(event_queue, state)
+        ui_thread.start()
+        ui_thread.draw_screen()
 
-    tl.start()
+        tl.start()
 
-    stop = False
+        stop = False
 
-    try:
-        while stop == False:
-            res = event_queue.get()
+        try:
+            while stop == False:
+                res = event_queue.get()
 
-            if res.type() == event.EVENT_TICK:
-                if not state.game_over:
-                    state = run_turn(state)
-                    ui_thread.draw_screen()
-                if state.game_over:
-                    ui_thread.game_over()
+                if res.type() == event.EVENT_TICK:
+                    if not state.game_over:
+                        state = run_turn(state)
+                        ui_thread.draw_screen()
+                    if state.game_over:
+                        ui_thread.game_over()
 
-            elif res.type() == event.EVENT_INPUT:
-                key = res.data()
-                handle_key(state, key)
-                if chr(key) == 'q':
-                    stop = True
+                elif res.type() == event.EVENT_INPUT:
+                    key = res.data()
+                    handle_key(state, key)
+                    if chr(key) == 'q':
+                        stop = True
 
-    except KeyboardInterrupt:
-        stop = True
+        except KeyboardInterrupt:
+            stop = True
 
-    finally:
-        # Clean up
-        ui_thread.stop()
-        tl.stop()
+        finally:
+            # Clean up
+            ui_thread.stop()
+            tl.stop()
+            curses.endwin()
 
 
 def handle_key(state, key):

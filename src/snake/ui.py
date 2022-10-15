@@ -92,6 +92,8 @@ class UiThread(Thread):
         state.game_win.keypad(True)
         state.game_win.nodelay(True)
         self.hide_cursor()
+        state.frame_win.clear()
+        state.game_win.clear()
 
         return state
 
