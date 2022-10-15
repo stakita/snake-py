@@ -1,6 +1,8 @@
 import curses
 from random import randint
+import time
 import logging
+import asyncio
 import contextlib
 import sys
 import termios
@@ -46,7 +48,7 @@ def init(state):
     return state
 
 
-def run():
+async def run():
     '''Entry point and main loop of the game'''
 
     with raw_mode(sys.stdin):
@@ -59,11 +61,19 @@ def run():
         ui_thread = UiThread(event_queue, state)
         ui_thread.start()
         ui_thread.draw_screen()
+        # reader = asyncio.StreamReader()
+        # loop = asyncio.get_event_loop()
+        # await loop.connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), sys.stdin)
+
+        # Timeloop has a default logging handler, remove it, so we only use our own handlers (avoids duplicate logs) logging.getLogger('timeloop').handlers.clear()
+        logging.getLogger('timeloop').handlers.clear()
 
         # Timeloop has a default logging handler, remove it, so we only use our own handlers (avoids duplicate logs) logging.getLogger('timeloop').handlers.clear()
         logging.getLogger('timeloop').handlers.clear()
 
         tl.start()
+        # ticker = asyncio.ensure_future(periodic(1, tick, event_queue))
+        # await ticker
 
         stop = False
 
@@ -75,9 +85,10 @@ def run():
                     if not state.game_over:
                         state = run_turn(state)
                         ui_thread.draw_screen()
+                        # print('draw_screen')
                     if state.game_over:
                         ui_thread.game_over()
-
+                        # print('game_over')
                 elif res.type() == event.EVENT_INPUT:
                     key = res.data()
                     handle_key(state, key)

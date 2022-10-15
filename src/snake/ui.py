@@ -3,6 +3,7 @@ import curses
 from threading import Thread
 import queue
 import logging
+import termios
 
 import snake.event as event
 
@@ -86,6 +87,7 @@ class UiThread(Thread):
         state.frame_win = curses.initscr()
         state.game_win = curses.newwin(state.height - 1, state.width, 1, 0)
 
+        curses.raw()
         curses.cbreak()
         curses.noecho()
         state.frame_win.keypad(True)
@@ -109,6 +111,8 @@ class UiThread(Thread):
         curses.echo()
         curses.nocbreak()
         curses.endwin()
+
+        # termios.tcsetattr(sys.stdout.fileno(), termios.TCSADRAIN, self.old_attrs)
 
 
     # Refs:
