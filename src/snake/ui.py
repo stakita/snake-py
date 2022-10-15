@@ -83,6 +83,7 @@ class UiThread(Thread):
 
     def init(self, state):
         log.debug('init')
+        state.frame_win = curses.initscr()
         state.game_win = curses.newwin(state.height - 1, state.width, 1, 0)
         curses.raw()
         curses.cbreak()

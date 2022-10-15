@@ -40,8 +40,7 @@ def tick():
     event_queue.put(event.Event(event.EVENT_TICK, None))
 
 
-def init(state, main_screen):
-    state.frame_win = main_screen
+def init(state):
     state = place_snake(state)
     state = place_food(state)
     return state
@@ -50,18 +49,19 @@ def init(state, main_screen):
 def run():
     '''Entry point and main loop of the game'''
 
-    stdscr = curses.initscr()
-
     with raw_mode(sys.stdin):
 
         # Init game state and variables
         state = state_mod.State()
-        state = init(state, stdscr)
+        state = init(state)
 
 
         ui_thread = UiThread(event_queue, state)
         ui_thread.start()
         ui_thread.draw_screen()
+
+        # Timeloop has a default logging handler, remove it, so we only use our own handlers (avoids duplicate logs) logging.getLogger('timeloop').handlers.clear()
+        logging.getLogger('timeloop').handlers.clear()
 
         tl.start()
 
@@ -91,7 +91,6 @@ def run():
             # Clean up
             ui_thread.stop()
             tl.stop()
-            curses.endwin()
 
 
 def handle_key(state, key):
