@@ -89,19 +89,24 @@ async def keyboard_handler(state):
                 stop = True
 
 
-async def run():
+def run():
     # Init game state and variables
     state = state_mod.State()
     state = init(state)
-
     ui.init(state)
 
+    try:
+        asyncio.run(run_async(state))
+    except KeyboardInterrupt:
+        pass
+    finally:
+        ui.finish()
+
+
+async def run_async(state):
     task = asyncio.create_task(keyboard_handler(state))
     asyncio.create_task(periodic(0.2, tick, state, ui))
-
     await task
-
-    ui.finish()
 
 
 def handle_key(state, key):

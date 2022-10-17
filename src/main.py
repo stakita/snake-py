@@ -10,7 +10,6 @@ Options:
 '''
 import logging
 import sys
-import asyncio
 
 try:
     from docopt import docopt
@@ -24,7 +23,7 @@ import snake.game
 def main():
     logging.basicConfig(filename='debug.log', level=logging.DEBUG)
     args = docopt(__doc__)
-    asyncio.run(snake.game.run())
+    snake.game.run()
 
 
 if __name__ == '__main__':
