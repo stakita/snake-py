@@ -47,20 +47,14 @@ async def periodic(interval, func, *args, **kwargs):
         )
 
 
-<<<<<<< HEAD
-def init(state):
-    state = place_snake(state)
-    state = place_food(state)
-    return state
-=======
-async def tick(state):
+async def tick(state, ui):
     if not state.game_over:
         state = run_turn(state)
-        # ui_thread.draw_screen()
-        print('draw_screen')
+        ui.draw_screen(state)
+        log.debug('draw_screen')
     if state.game_over:
-        # ui_thread.game_over()
-        print('game_over')
+        ui.game_over(state)
+        log.debug('game_over')
 
 
 async def keyboard_handler(state):
@@ -77,16 +71,16 @@ async def keyboard_handler(state):
 
             key = chr(ord(await reader.read(1)))
 
-            print('key: {} - {}'.format(repr(key), type(key)))
+            # print('key: {} - {}'.format(repr(key), type(key)))
 
             # Ref: https://stackoverflow.com/a/69065464
             if not escape_seq and key == chr(27):
-                print('esc 0')
+                # print('esc 0')
                 escape_seq == True
             else:
 
                 if escape_state_1:
-                    print('esc 1c')
+                    # print('esc 1c')
                     match key:
                         case 'A':
                             handle_key(state, KEY_UP)
@@ -100,27 +94,32 @@ async def keyboard_handler(state):
                     escape_state_1 = False
                 else:
                     if key == '[':
-                        print('esc 1a')
+                        # print('esc 1a')
                         escape_state_1 = True
                     else:
-                        print('esc 1b')
+                        # print('esc 1b')
                         escape_seq = False
                         escape_state_1 = False
 
             if key == 'q':
                 stop = True
->>>>>>> Synchronize implementations
 
+
+import snake.ui_non_threaded as ui
 
 async def run():
     # Init game state and variables
     state = state_mod.State()
     state = init(state)
 
+    ui.init(state)
+
     task = asyncio.create_task(keyboard_handler(state))
-    asyncio.create_task(periodic(0.2, tick, state))
+    asyncio.create_task(periodic(0.2, tick, state, ui))
 
     await task
+
+    ui.finish()
 
 
 # async def run_core():
@@ -129,19 +128,9 @@ async def run():
 
 #     with raw_mode(sys.stdin):
 
-<<<<<<< HEAD
-        # Timeloop has a default logging handler, remove it, so we only use our own handlers (avoids duplicate logs) logging.getLogger('timeloop').handlers.clear()
-        logging.getLogger('timeloop').handlers.clear()
-
-        tl.start()
-        # ticker = asyncio.ensure_future(periodic(1, tick, event_queue))
-        # await ticker
-=======
 #         # Init game state and variables
 #         state = state_mod.State()
 #         state = init(state)
->>>>>>> Synchronize implementations
-
 
 
 #         # ui_thread = UiThread(event_queue, state)
@@ -193,7 +182,6 @@ async def run():
 
 def handle_key(state, key):
     log.debug('handle_key: {}'.format(key))
-    print('handle_key: {}'.format(key))
     if key == KEY_UP and not state.previous in (state_mod.DIRECTION_DOWN, state_mod.DIRECTION_UP):
         log.debug('go up')
         state.direction = state_mod.DIRECTION_UP
