@@ -40,9 +40,7 @@ def raw_mode(file):
 
 # Ref: https://stackoverflow.com/a/55505152
 async def periodic(interval, func, *args, **kwargs):
-    print('periodic - start')
     while True:
-        print('periodic - loop')
         await asyncio.gather(
             func(*args, **kwargs),
             asyncio.sleep(interval),
@@ -56,8 +54,6 @@ def init(state):
     return state
 =======
 async def tick(state):
-    print('tick')
-
     if not state.game_over:
         state = run_turn(state)
         # ui_thread.draw_screen()
