@@ -6,9 +6,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-commands = {'STOP', 'DRAW_SCREEN', 'GAME_OVER'}
-
-
 def init(state):
     log.debug('init')
 
@@ -45,7 +42,6 @@ def hide_cursor():
 def show_cursor():
     sys.stdout.write(SHOW_CURSOR_SEQUENCE)
     sys.stdout.flush()
-
 
 
 def draw_screen(state):
