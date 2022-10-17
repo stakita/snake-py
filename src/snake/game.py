@@ -1,24 +1,14 @@
 import asyncio
 import contextlib
-import curses
 import logging
 from random import randint
 import sys
 import termios
 
 import snake.state as state_mod
-
-from snake.ui import UiThread
-import snake.event as event
-
-import queue
-
-# TODO: add import checks
-from timeloop import Timeloop
-from datetime import timedelta
+import snake.ui_non_threaded as ui
 
 log = logging.getLogger(__name__)
-
 
 KEY_UP = '_KEY_UP'
 KEY_DOWN = '_KEY_DOWN'
@@ -71,16 +61,12 @@ async def keyboard_handler(state):
 
             key = chr(ord(await reader.read(1)))
 
-            # print('key: {} - {}'.format(repr(key), type(key)))
-
             # Ref: https://stackoverflow.com/a/69065464
             if not escape_seq and key == chr(27):
-                # print('esc 0')
                 escape_seq == True
             else:
 
                 if escape_state_1:
-                    # print('esc 1c')
                     match key:
                         case 'A':
                             handle_key(state, KEY_UP)
@@ -94,18 +80,14 @@ async def keyboard_handler(state):
                     escape_state_1 = False
                 else:
                     if key == '[':
-                        # print('esc 1a')
                         escape_state_1 = True
                     else:
-                        # print('esc 1b')
                         escape_seq = False
                         escape_state_1 = False
 
             if key == 'q':
                 stop = True
 
-
-import snake.ui_non_threaded as ui
 
 async def run():
     # Init game state and variables
@@ -120,64 +102,6 @@ async def run():
     await task
 
     ui.finish()
-
-
-# async def run_core():
-#     '''Entry point and main loop of the game'''
-#     print('run_core - start')
-
-#     with raw_mode(sys.stdin):
-
-#         # Init game state and variables
-#         state = state_mod.State()
-#         state = init(state)
-
-
-#         # ui_thread = UiThread(event_queue, state)
-#         # ui_thread.start()
-#         # ui_thread.draw_screen()
-#         # reader = asyncio.StreamReader()
-#         # loop = asyncio.get_event_loop()
-#         # await loop.connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), sys.stdin)
-
-#         # Timeloop has a default logging handler, remove it, so we only use our own handlers (avoids duplicate logs) logging.getLogger('timeloop').handlers.clear()
-#         # logging.getLogger('timeloop').handlers.clear()
-
-#         # tl.start()
-#         # ticker = asyncio.ensure_future(periodic(1, tick, event_queue))
-#         # await ticker
-
-#         stop = False
-
-#         try:
-#             while stop == False:
-#                 print('run_core - event_queue.get()')
-#                 res = event_queue.get()
-#                 print('run_core - got it')
-
-#                 if res.type() == event.EVENT_TICK:
-#                     if not state.game_over:
-#                         state = run_turn(state)
-#                         # ui_thread.draw_screen()
-#                         print('draw_screen')
-#                     if state.game_over:
-#                         # ui_thread.game_over()
-#                         print('game_over')
-#                 elif res.type() == event.EVENT_INPUT:
-#                     key = res.data()
-#                     handle_key(state, key)
-#                     if chr(key) == 'q':
-#                         stop = True
-
-#         except KeyboardInterrupt:
-#             stop = True
-
-#         finally:
-#             # Clean up
-#             # tl.stop()
-#             # ui_thread.stop()
-#             # ui_thread.join()
-#             pass
 
 
 def handle_key(state, key):
