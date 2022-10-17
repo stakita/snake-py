@@ -85,7 +85,7 @@ class UiThread(Thread):
         log.debug('init')
         state.frame_win = curses.initscr()
         state.game_win = curses.newwin(state.height - 1, state.width, 1, 0)
-        curses.raw()
+
         curses.cbreak()
         curses.noecho()
         state.frame_win.keypad(True)
@@ -102,12 +102,12 @@ class UiThread(Thread):
     def finish(self, state):
         log.debug('finish')
         self.show_cursor()
-        curses.nocbreak()
         state.frame_win.keypad(False)
         state.frame_win.nodelay(False)
         state.game_win.keypad(False)
         state.game_win.nodelay(False)
         curses.echo()
+        curses.nocbreak()
         curses.endwin()
 
 

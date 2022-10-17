@@ -89,8 +89,9 @@ def run():
 
         finally:
             # Clean up
-            ui_thread.stop()
             tl.stop()
+            ui_thread.stop()
+            ui_thread.join()
 
 
 def handle_key(state, key):
