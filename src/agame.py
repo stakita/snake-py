@@ -1,9 +1,9 @@
 import asyncio
 import contextlib
-import termios
 import logging
-import sys
 from random import randint
+import sys
+import termios
 
 import snake.state as state_mod
 
@@ -27,7 +27,29 @@ def raw_mode(file):
         termios.tcsetattr(file.fileno(), termios.TCSADRAIN, old_attrs)
 
 
-async def key_handler(state):
+async def periodic(interval, func, *args, **kwargs):
+    while True:
+        await asyncio.gather(
+            func(*args, **kwargs),
+            asyncio.sleep(interval),
+        )
+
+
+async def tick(state):
+    # global event_queue
+    # event_queue.put(event.Event(event.EVENT_TICK, None))
+    print('tick')
+
+    if not state.game_over:
+        state = run_turn(state)
+        # ui_thread.draw_screen()
+        print('draw_screen')
+    if state.game_over:
+        # ui_thread.game_over()
+        print('game_over')
+
+
+async def keyboard_handler(state):
     reader = asyncio.StreamReader()
     loop = asyncio.get_event_loop()
     await loop.connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), sys.stdin)
@@ -76,35 +98,12 @@ async def key_handler(state):
                 stop = True
 
 
-async def periodic(interval, func, *args, **kwargs):
-    while True:
-        await asyncio.gather(
-            func(*args, **kwargs),
-            asyncio.sleep(interval),
-        )
-
-
-async def tick(state):
-    # global event_queue
-    # event_queue.put(event.Event(event.EVENT_TICK, None))
-    print('tick')
-
-    if not state.game_over:
-        state = run_turn(state)
-        # ui_thread.draw_screen()
-        print('draw_screen')
-    if state.game_over:
-        # ui_thread.game_over()
-        print('game_over')
-
-
-
-async def main():
+async def run():
     # Init game state and variables
     state = state_mod.State()
     state = init(state)
 
-    task = asyncio.create_task(key_handler(state))
+    task = asyncio.create_task(keyboard_handler(state))
     asyncio.create_task(periodic(1, tick, state))
 
     print('2')
@@ -230,5 +229,6 @@ def next_snake_head(current_head, direction):
     return (x_curr + x_delta, y_curr + y_delta)
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(run())
 

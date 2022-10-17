@@ -1,9 +1,8 @@
-import curses
-from random import randint
-import time
-import logging
 import asyncio
 import contextlib
+import curses
+import logging
+from random import randint
 import sys
 import termios
 
@@ -21,6 +20,12 @@ from datetime import timedelta
 log = logging.getLogger(__name__)
 
 
+KEY_UP = '_KEY_UP'
+KEY_DOWN = '_KEY_DOWN'
+KEY_LEFT = '_KEY_LEFT'
+KEY_RIGHT = '_KEY_RIGHT'
+
+
 @contextlib.contextmanager
 def raw_mode(file):
     old_attrs = termios.tcgetattr(file.fileno())
@@ -33,92 +38,184 @@ def raw_mode(file):
         termios.tcsetattr(file.fileno(), termios.TCSADRAIN, old_attrs)
 
 
-tl = Timeloop()
-event_queue = queue.Queue()
+# Ref: https://stackoverflow.com/a/55505152
+async def periodic(interval, func, *args, **kwargs):
+    print('periodic - start')
+    while True:
+        print('periodic - loop')
+        await asyncio.gather(
+            func(*args, **kwargs),
+            asyncio.sleep(interval),
+        )
 
-@tl.job(interval=timedelta(seconds=0.2))
-def tick():
-    global event_queue
-    event_queue.put(event.Event(event.EVENT_TICK, None))
 
-
+<<<<<<< HEAD
 def init(state):
     state = place_snake(state)
     state = place_food(state)
     return state
+=======
+async def tick(state):
+    print('tick')
+
+    if not state.game_over:
+        state = run_turn(state)
+        # ui_thread.draw_screen()
+        print('draw_screen')
+    if state.game_over:
+        # ui_thread.game_over()
+        print('game_over')
+
+
+async def keyboard_handler(state):
+    reader = asyncio.StreamReader()
+    loop = asyncio.get_event_loop()
+    await loop.connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), sys.stdin)
+
+    with raw_mode(sys.stdin):
+        stop = False
+        escape_seq = False
+        escape_state_1 = False
+
+        while stop == False:
+
+            key = chr(ord(await reader.read(1)))
+
+            print('key: {} - {}'.format(repr(key), type(key)))
+
+            # Ref: https://stackoverflow.com/a/69065464
+            if not escape_seq and key == chr(27):
+                print('esc 0')
+                escape_seq == True
+            else:
+
+                if escape_state_1:
+                    print('esc 1c')
+                    match key:
+                        case 'A':
+                            handle_key(state, KEY_UP)
+                        case 'B':
+                            handle_key(state, KEY_DOWN)
+                        case 'C':
+                            handle_key(state, KEY_RIGHT)
+                        case 'D':
+                            handle_key(state, KEY_LEFT)
+                    escape_seq = False
+                    escape_state_1 = False
+                else:
+                    if key == '[':
+                        print('esc 1a')
+                        escape_state_1 = True
+                    else:
+                        print('esc 1b')
+                        escape_seq = False
+                        escape_state_1 = False
+
+            if key == 'q':
+                stop = True
+>>>>>>> Synchronize implementations
 
 
 async def run():
-    '''Entry point and main loop of the game'''
+    # Init game state and variables
+    state = state_mod.State()
+    state = init(state)
 
-    with raw_mode(sys.stdin):
+    task = asyncio.create_task(keyboard_handler(state))
+    asyncio.create_task(periodic(0.2, tick, state))
 
-        # Init game state and variables
-        state = state_mod.State()
-        state = init(state)
+    await task
 
 
-        ui_thread = UiThread(event_queue, state)
-        ui_thread.start()
-        ui_thread.draw_screen()
-        # reader = asyncio.StreamReader()
-        # loop = asyncio.get_event_loop()
-        # await loop.connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), sys.stdin)
+# async def run_core():
+#     '''Entry point and main loop of the game'''
+#     print('run_core - start')
 
-        # Timeloop has a default logging handler, remove it, so we only use our own handlers (avoids duplicate logs) logging.getLogger('timeloop').handlers.clear()
-        logging.getLogger('timeloop').handlers.clear()
+#     with raw_mode(sys.stdin):
 
+<<<<<<< HEAD
         # Timeloop has a default logging handler, remove it, so we only use our own handlers (avoids duplicate logs) logging.getLogger('timeloop').handlers.clear()
         logging.getLogger('timeloop').handlers.clear()
 
         tl.start()
         # ticker = asyncio.ensure_future(periodic(1, tick, event_queue))
         # await ticker
+=======
+#         # Init game state and variables
+#         state = state_mod.State()
+#         state = init(state)
+>>>>>>> Synchronize implementations
 
-        stop = False
 
-        try:
-            while stop == False:
-                res = event_queue.get()
 
-                if res.type() == event.EVENT_TICK:
-                    if not state.game_over:
-                        state = run_turn(state)
-                        ui_thread.draw_screen()
-                        # print('draw_screen')
-                    if state.game_over:
-                        ui_thread.game_over()
-                        # print('game_over')
-                elif res.type() == event.EVENT_INPUT:
-                    key = res.data()
-                    handle_key(state, key)
-                    if chr(key) == 'q':
-                        stop = True
+#         # ui_thread = UiThread(event_queue, state)
+#         # ui_thread.start()
+#         # ui_thread.draw_screen()
+#         # reader = asyncio.StreamReader()
+#         # loop = asyncio.get_event_loop()
+#         # await loop.connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), sys.stdin)
 
-        except KeyboardInterrupt:
-            stop = True
+#         # Timeloop has a default logging handler, remove it, so we only use our own handlers (avoids duplicate logs) logging.getLogger('timeloop').handlers.clear()
+#         # logging.getLogger('timeloop').handlers.clear()
 
-        finally:
-            # Clean up
-            tl.stop()
-            ui_thread.stop()
-            ui_thread.join()
+#         # tl.start()
+#         # ticker = asyncio.ensure_future(periodic(1, tick, event_queue))
+#         # await ticker
+
+#         stop = False
+
+#         try:
+#             while stop == False:
+#                 print('run_core - event_queue.get()')
+#                 res = event_queue.get()
+#                 print('run_core - got it')
+
+#                 if res.type() == event.EVENT_TICK:
+#                     if not state.game_over:
+#                         state = run_turn(state)
+#                         # ui_thread.draw_screen()
+#                         print('draw_screen')
+#                     if state.game_over:
+#                         # ui_thread.game_over()
+#                         print('game_over')
+#                 elif res.type() == event.EVENT_INPUT:
+#                     key = res.data()
+#                     handle_key(state, key)
+#                     if chr(key) == 'q':
+#                         stop = True
+
+#         except KeyboardInterrupt:
+#             stop = True
+
+#         finally:
+#             # Clean up
+#             # tl.stop()
+#             # ui_thread.stop()
+#             # ui_thread.join()
+#             pass
 
 
 def handle_key(state, key):
     log.debug('handle_key: {}'.format(key))
-    if key == curses.KEY_UP and not state.previous in (state_mod.DIRECTION_DOWN, state_mod.DIRECTION_UP):
+    print('handle_key: {}'.format(key))
+    if key == KEY_UP and not state.previous in (state_mod.DIRECTION_DOWN, state_mod.DIRECTION_UP):
         log.debug('go up')
         state.direction = state_mod.DIRECTION_UP
-    elif key == curses.KEY_DOWN and not state.previous in (state_mod.DIRECTION_DOWN, state_mod.DIRECTION_UP):
+    elif key == KEY_DOWN and not state.previous in (state_mod.DIRECTION_DOWN, state_mod.DIRECTION_UP):
         log.debug('go down')
         state.direction = state_mod.DIRECTION_DOWN
-    elif key == curses.KEY_LEFT and not state.previous in (state_mod.DIRECTION_LEFT, state_mod.DIRECTION_RIGHT):
+    elif key == KEY_LEFT and not state.previous in (state_mod.DIRECTION_LEFT, state_mod.DIRECTION_RIGHT):
         log.debug('go left')
         state.direction = state_mod.DIRECTION_LEFT
-    elif key == curses.KEY_RIGHT and not state.previous in (state_mod.DIRECTION_LEFT, state_mod.DIRECTION_RIGHT):
+    elif key == KEY_RIGHT and not state.previous in (state_mod.DIRECTION_LEFT, state_mod.DIRECTION_RIGHT):
         log.debug('go right')
         state.direction = state_mod.DIRECTION_RIGHT
+    return state
+
+
+def init(state):
+    state = place_snake(state)
+    state = place_food(state)
     return state
 
 
