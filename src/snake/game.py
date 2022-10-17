@@ -6,7 +6,7 @@ import sys
 import termios
 
 import snake.state as state_mod
-import snake.ui_non_threaded as ui
+import snake.ui as ui
 
 log = logging.getLogger(__name__)
 
