@@ -93,7 +93,7 @@ def update_score(state):
 
 
 if __name__ == '__main__':
-    import state as state_mod
+    import snake.state as state_mod
     import time
 
     state = state_mod.State()
